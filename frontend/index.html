@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestão Automotiva</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        header {
+            background: #1a237e;
+            color: #fff;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header h1 { font-size: 1.4rem; }
+
+        nav {
+            background: #283593;
+            display: flex;
+            gap: 4px;
+            padding: 0 32px;
+        }
+
+        nav button {
+            background: transparent;
+            color: #c5cae9;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        nav button:hover, nav button.active {
+            color: #fff;
+            border-bottom-color: #ff6f00;
+        }
+
+        main { padding: 24px 32px; }
+
+        .section { display: none; }
+        .section.active { display: block; }
+
+        h2 { margin-bottom: 16px; color: #1a237e; }
+
+        /* Filtros */
+        .filters {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.1);
+        }
+
+        .filters label { font-size: 0.8rem; color: #666; display: flex; flex-direction: column; gap: 4px; }
+
+        .filters input, .filters select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            min-width: 140px;
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: #1a237e; color: #fff; }
+        .btn-success { background: #2e7d32; color: #fff; }
+        .btn-warning { background: #e65100; color: #fff; }
+        .btn-danger  { background: #c62828; color: #fff; }
+        .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+
+        /* Tabela */
+        .table-wrapper {
+            background: #fff;
+            border-radius: 8px;
+            overflow: auto;
+            box-shadow: 0 1px 4px rgba(0,0,0,.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        thead { background: #1a237e; color: #fff; }
+        th, td { padding: 10px 14px; text-align: left; }
+        tbody tr:nth-child(even) { background: #f5f5f5; }
+        tbody tr:hover { background: #e8eaf6; }
+
+        /* Badge status */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-DISPONIVEL    { background: #c8e6c9; color: #1b5e20; }
+        .badge-VENDIDO       { background: #ffcdd2; color: #b71c1c; }
+        .badge-RESERVADO     { background: #fff9c4; color: #f57f17; }
+        .badge-MANUTENCAO    { background: #ffe0b2; color: #e65100; }
+        .badge-DESCONTINUADO { background: #e0e0e0; color: #424242; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            width: 520px;
+            max-width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h3 { margin-bottom: 16px; color: #1a237e; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.82rem; color: #555; margin-bottom: 4px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+        /* Paginação */
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+
+        .pagination button { padding: 6px 14px; }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #323232;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show { opacity: 1; }
+        .toast.success { background: #2e7d32; }
+        .toast.error   { background: #c62828; }
+    </style>
+</head>
+<body>
+
+<header>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3"/>
+        <rect x="9" y="11" width="14" height="10" rx="2"/>
+        <circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+    </svg>
+    <h1>Gestão Automotiva</h1>
+</header>
+
+<nav>
+    <button class="active" onclick="showSection('veiculos', this)">Veículos</button>
+    <button onclick="showSection('modelos', this)">Modelos</button>
+    <button onclick="showSection('marcas', this)">Marcas</button>
+</nav>
+
+<main>
+
+    <!-- ===== VEÍCULOS ===== -->
+    <section id="veiculos" class="section active">
+        <h2>Veículos</h2>
+
+        <div class="filters">
+            <label>Marca
+                <select id="f-marca" onchange="loadModelosFiltro()">
+                    <option value="">Todas</option>
+                </select>
+            </label>
+            <label>Modelo
+                <select id="f-modelo"><option value="">Todos</option></select>
+            </label>
+            <label>Preço mín (R$)
+                <input type="number" id="f-precoMin" placeholder="0" />
+            </label>
+            <label>Preço máx (R$)
+                <input type="number" id="f-precoMax" placeholder="999999" />
+            </label>
+            <label>Ano mín
+                <input type="number" id="f-anoMin" placeholder="2000" />
+            </label>
+            <label>Ano máx
+                <input type="number" id="f-anoMax" placeholder="2025" />
+            </label>
+            <label>Status
+                <select id="f-status">
+                    <option value="">Todos</option>
+                    <option>DISPONIVEL</option>
+                    <option>VENDIDO</option>
+                    <option>RESERVADO</option>
+                    <option>MANUTENCAO</option>
+                    <option>DESCONTINUADO</option>
+                </select>
+            </label>
+            <label style="justify-content:flex-end; flex-direction:row; align-items:flex-end; gap:8px;">
+                <button class="btn btn-primary" onclick="loadVeiculos(0)">Filtrar</button>
+                <button class="btn btn-success" onclick="openVeiculoModal()">+ Novo</button>
+            </label>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>Placa</th><th>Marca</th><th>Modelo</th>
+                        <th>Cor</th><th>Ano</th><th>Preço</th><th>KM</th>
+                        <th>Status</th><th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="veiculos-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="btn btn-primary btn-sm" id="btn-prev" onclick="changePage(-1)">‹ Anterior</button>
+            <span id="page-info">Página 1</span>
+            <button class="btn btn-primary btn-sm" id="btn-next" onclick="changePage(1)">Próxima ›</button>
+        </div>
+    </section>
+
+    <!-- ===== MODELOS ===== -->
+    <section id="modelos" class="section">
+        <h2>Modelos</h2>
+        <div style="margin-bottom:16px;">
+            <button class="btn btn-success" onclick="openModeloModal()">+ Novo Modelo</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Nome</th><th>Categoria</th><th>Marca</th><th>Ações</th></tr>
+                </thead>
+                <tbody id="modelos-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ===== MARCAS ===== -->
+    <section id="marcas" class="section">
+        <h2>Marcas</h2>
+        <div style="margin-bottom:16px;">
+            <button class="btn btn-success" onclick="openMarcaModal()">+ Nova Marca</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Nome</th><th>País de Origem</th><th>Ações</th></tr>
+                </thead>
+                <tbody id="marcas-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<!-- ===== MODAL VEÍCULO ===== -->
+<div class="modal-overlay" id="modal-veiculo">
+    <div class="modal">
+        <h3 id="modal-veiculo-title">Novo Veículo</h3>
+        <input type="hidden" id="v-id" />
+        <div class="form-row">
+            <div class="form-group">
+                <label>Marca *</label>
+                <select id="v-marca" onchange="loadModelosForm()">
+                    <option value="">Selecione...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Modelo *</label>
+                <select id="v-modelo"><option value="">Selecione...</option></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Placa *</label>
+                <input type="text" id="v-placa" placeholder="ABC1D23" maxlength="10" />
+            </div>
+            <div class="form-group">
+                <label>Chassi *</label>
+                <input type="text" id="v-chassi" placeholder="17 caracteres" maxlength="17" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Cor *</label>
+                <input type="text" id="v-cor" placeholder="Branco" />
+            </div>
+            <div class="form-group">
+                <label>Ano *</label>
+                <input type="number" id="v-ano" placeholder="2024" min="1900" max="2100" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Preço (R$) *</label>
+                <input type="number" id="v-preco" placeholder="0.00" step="0.01" />
+            </div>
+            <div class="form-group">
+                <label>Quilometragem *</label>
+                <input type="number" id="v-km" placeholder="0" min="0" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Status *</label>
+            <select id="v-status">
+                <option>DISPONIVEL</option>
+                <option>RESERVADO</option>
+                <option>MANUTENCAO</option>
+                <option>VENDIDO</option>
+                <option>DESCONTINUADO</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modal-veiculo')">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveVeiculo()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL MODELO ===== -->
+<div class="modal-overlay" id="modal-modelo">
+    <div class="modal">
+        <h3 id="modal-modelo-title">Novo Modelo</h3>
+        <input type="hidden" id="m-id" />
+        <div class="form-group">
+            <label>Nome *</label>
+            <input type="text" id="m-nome" placeholder="Ex: Corolla" />
+        </div>
+        <div class="form-group">
+            <label>Categoria *</label>
+            <input type="text" id="m-categoria" placeholder="Ex: Sedan, SUV, Hatch..." />
+        </div>
+        <div class="form-group">
+            <label>Marca *</label>
+            <select id="m-marca"><option value="">Selecione...</option></select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modal-modelo')">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveModelo()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL MARCA ===== -->
+<div class="modal-overlay" id="modal-marca">
+    <div class="modal">
+        <h3 id="modal-marca-title">Nova Marca</h3>
+        <input type="hidden" id="ma-id" />
+        <div class="form-group">
+            <label>Nome *</label>
+            <input type="text" id="ma-nome" placeholder="Ex: Toyota" />
+        </div>
+        <div class="form-group">
+            <label>País de Origem *</label>
+            <input type="text" id="ma-pais" placeholder="Ex: Japão" />
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal('modal-marca')">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveMarca()">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
