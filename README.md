@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚗 Sistema de Gestão Automotiva
 
 API REST desenvolvida com **Spring Boot 3** + **MySQL** para gerenciamento de veículos, modelos e marcas.
@@ -143,3 +144,7 @@ gestao-automotiva/
 | MANUTENCAO    | Em manutenção                    |
 | VENDIDO       | Já foi vendido                   |
 | DESCONTINUADO | Fora de linha / descontinuado    |
+=======
+# Gestao-de-veiculos
+Sistema de gestão de estoque para lojas automotivas e locadoras de veículos
+>>>>>>> 2ee43c6333a34e395b3e185149e929357d983c39
